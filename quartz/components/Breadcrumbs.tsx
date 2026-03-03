@@ -35,6 +35,14 @@ const defaultOptions: BreadcrumbOptions = {
   showCurrentPage: true,
 }
 
+function basePathFromUrl(baseUrl: string): string {
+  const url = new URL(`https://${baseUrl}`)
+  if (url.pathname === "/") {
+    return "/"
+  }
+  return url.pathname.endsWith("/") ? url.pathname : `${url.pathname}/`
+}
+
 function formatCrumb(displayName: string, baseSlug: FullSlug, currentSlug: SimpleSlug): CrumbData {
   return {
     displayName: displayName.replaceAll("-", " "),
@@ -48,6 +56,7 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
     fileData,
     allFiles,
     displayClass,
+    cfg,
     ctx,
   }: QuartzComponentProps) => {
     const trie = (ctx.trie ??= trieFromAllFiles(allFiles))
@@ -58,10 +67,14 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
       return null
     }
 
+    const basePath = cfg?.baseUrl ? basePathFromUrl(cfg.baseUrl) : null
     const crumbs: CrumbData[] = pathNodes.map((node, idx) => {
       const crumb = formatCrumb(node.displayName, fileData.slug!, simplifySlug(node.slug))
       if (idx === 0) {
         crumb.displayName = options.rootName
+        if (basePath) {
+          crumb.path = basePath
+        }
       }
 
       // For last node (current page), set empty path
