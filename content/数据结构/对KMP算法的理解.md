@@ -1,9 +1,8 @@
 ---
-date:
-    created: 2025-10-30
-    readtime: 5
-author:
-    - RichardYi
+title: 各种排序问题中比较器的写法
+tags:
+  - 数据结构
+  - 大二上学期
 ---
 
 # 对KMP算法的理解
