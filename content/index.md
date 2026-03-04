@@ -1,5 +1,5 @@
 ---
-title: Welcome to RichardYi's
+title: Welcome to RichardYi's Notebook
 tags:
 ---
 
