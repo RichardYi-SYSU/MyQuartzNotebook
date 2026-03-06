@@ -35,18 +35,6 @@ AI 产出位置与覆盖策略
 - 默认覆盖更新同名文件，不做时间戳版本化
 - 不修改原始笔记文件，仅新增或更新 `content/ai/` 内文件
 
-AI 目录结构
-
-- `content/ai/summaries/` 课程与章节总结
-- `content/ai/quizzes/` 小测题与答案
-- `content/ai/glossary/` 术语表
-- `content/ai/flashcards/` 复习卡片
-- `content/ai/review/` 周度/期中/期末复盘
-- `content/ai/links/` 相关笔记与概念关联
-- `content/ai/todo/` 从笔记提取的行动项
-- `content/ai/errors/` 易错点与纠错记录
-- `content/ai/reading/` 外部资料摘要
-
 文件命名规范
 
 - 课程级: `<课程名>.md`
