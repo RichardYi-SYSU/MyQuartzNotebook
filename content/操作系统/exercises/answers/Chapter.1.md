@@ -167,16 +167,16 @@ Access I/O device instructions are privileged. These instructions execute in the
 
 **Privileged instructions and Un-privileged instructions are tabulated as below:**
 
-**S.no** |  **Instruction** |  **Type**  
----|---|---  
-a. |  Set the Value of timer |  Privileged  
-b. |  Read the clock |  Un-Privileged  
-c. |  Clear memory |  Privileged  
-d. |  Issue a trap instruction |  Un-Privileged  
-e. |  Turn off interrupts |  Privileged  
-f. |  Modify entries in device-status table |  Privileged  
-g. |  Switch from user to kernel mode |  Privileged  
-h. |  Access I/O device |  Privileged
+| **S.no** | **Instruction**                       | **Type**      |
+| -------- | ------------------------------------- | ------------- |
+| a.       | Set the Value of timer                | Privileged    |
+| b.       | Read the clock                        | Un-Privileged |
+| c.       | Clear memory                          | Privileged    |
+| d.       | Issue a trap instruction              | Un-Privileged |
+| e.       | Turn off interrupts                   | Privileged    |
+| f.       | Modify entries in device-status table | Privileged    |
+| g.       | Switch from user to kernel mode       | Privileged    |
+| h.       | Access I/O device                     | Privileged    |
 
 
 ---
