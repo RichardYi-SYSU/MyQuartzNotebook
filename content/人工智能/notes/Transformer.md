@@ -295,4 +295,285 @@ Encoder中最后的隐藏状态维度是固定的，比如 256 维、512 维、1
 2. 最小化线互距离
 3. 最大化可并行性
 
+## QKV
+
+Transformer 中的 **Query（Q）**、**Key（K）**、**Value（V）** 可以理解为一种“内容检索机制”，其思想来源于数据库查询。
+
+先用一个现实例子理解：
+
+假设一句话：
+
+“The animal didn’t cross the street because **it** was too tired.”
+
+当模型处理单词 **it** 时，需要判断 it 指代谁。
+
+此时：
+
+- it 相当于发出一个查询（Query）
+- 句子中的其他单词提供自己的特征（Key）
+- 每个单词还携带自身的信息（Value）
+
+模型会计算：
+
+$$\text{Query}_{it} \cdot \text{Key}_{animal}$$
+$$\text{Query}_{it} \cdot \text{Key}_{street}$$
+谁的匹配度高，就认为 it 更应该关注谁。
+
+**一、Q、K、V从哪里来**
+
+假设输入序列：
+
+$$X= \begin{bmatrix} x_1\\ x_2\\ x_3 \end{bmatrix}$$
+
+每个 x_i 是词向量。
+
+Transformer通过三个可学习矩阵：
+
+$$W_Q,\quad W_K,\quad W_V$$
+
+生成：
+
+$$Q=XW_Q$$
+
+$$K=XW_K$$
+
+$$V=XW_V$$
+
+因此：
+
+$$q_i=x_iW_Q$$
+
+$$k_i=x_iW_K$$
+
+$$v_i=x_iW_V$$
+**二、Query是什么**
+
+可以理解成：
+
+当前词想寻找什么信息
+
+例如：
+
+句子：
+
+Tom gave Jerry a book because he liked reading.
+
+处理 “he” 时：
+
+Query中可能包含：
+
+- 找一个男性
+- 找一个能执行”喜欢阅读”动作的对象
+
+即：
+
+$$q_{he}$$
+
+表示：
+
+我现在需要什么上下文信息？
+
+**三、Key是什么**
+
+Key可以理解为：
+
+我能够提供什么信息
+
+例如：
+
+Tom的Key可能包含：
+
+- 男性
+- 人名
+
+Jerry的Key可能包含：
+
+- 男性
+- 人名
+
+book的Key可能包含：
+
+- 物体
+
+因此：
+
+$$k_i$$
+
+表示：
+
+我是什么类型的信息？
+
+**四、Value是什么**
+
+Value是真正被取出的内容。
+
+例如数据库：
+
+|**Key**|**Value**|
+|---|---|
+|Tom|Tom的信息|
+|Jerry|Jerry的信息|
+|Book|Book的信息|
+
+匹配时：
+
+Query 与 Key 计算相似度：
+
+$$q_i k_j^T$$
+
+得到权重：
+
+$$\alpha_{ij}$$
+
+然后用权重加权 Value：
+
+$$z_i = \sum_j \alpha_{ij}v_j$$
+
+最终得到：
+
+$$z_i$$
+
+这才是Attention层的输出。
+
+所以：
+
+- Q负责提问
+- K负责匹配
+- V负责提供内容
+
+**五、Attention计算全过程**
+
+**第一步：计算相关性**
+
+$$QK^T$$
+
+例如：
+
+$$Q= \begin{bmatrix} q_1\\ q_2\\ q_3 \end{bmatrix}$$
+
+$$K= \begin{bmatrix} k_1\\ k_2\\ k_3 \end{bmatrix}$$
+
+得到：
+
+$$QK^T = \begin{bmatrix} q_1k_1 & q_1k_2 & q_1k_3\\ q_2k_1 & q_2k_2 & q_2k_3\\ q_3k_1 & q_3k_2 & q_3k_3 \end{bmatrix}$$
+
+第 i 行表示：
+
+第 i 个词对所有词的关注程度
+
+**第二步：缩放**
+
+$$\frac{QK^T}{\sqrt{d_k}}$$
+
+原因：
+
+维度越高，点积越大，Softmax容易饱和。
+
+**第三步：Softmax**
+
+$$A = \text{Softmax} \left( \frac{QK^T}{\sqrt{d_k}} \right)$$
+
+得到注意力权重矩阵。
+
+例如：
+
+$$A= \begin{bmatrix} 0.1&0.8&0.1\\ 0.3&0.2&0.5\\ 0.4&0.4&0.2 \end{bmatrix}$$
+
+**第四步：加权Value**
+
+$$Z=AV$$
+
+即：
+$$\text{Attention}(Q,K,V) = \text{Softmax} \left( \frac{QK^T}{\sqrt{d_k}} \right)V$$
+
+这就是Transformer最核心的公式。
+
+**六、为什么不直接用X，而要拆成Q/K/V？**
+
+如果直接：
+
+$$\text{Attention}(X,X,X)$$
+那么：
+
+- 查询特征
+- 匹配特征
+- 输出特征
+
+都被绑在一起。
+
+模型灵活性很差。
+
+拆开后：
+$$Q=XW_Q$$
+$$K=XW_K $$
+$$V=XW_V$$
+
+模型可以学到：
+
+- 用什么特征寻找信息（Q）
+- 用什么特征被寻找（K）
+- 输出什么内容（V）
+
+三种表示可以完全不同。
+
+如果没有 Key，直接拿 Value 去匹配，就要求 Value 既要适合被搜索，又要适合输出内容，模型表达能力会下降。
+
+**七、自注意力(Self-Attention)中的QKV**
+
+对于输入：
+
+$$[x_1,x_2,\dots,x_n]$$
+
+每个词同时产生：
+
+$$(q_i,k_i,v_i)$$
+
+例如处理第 i 个词：
+
+$$q_i$$
+
+去和所有：
+
+$$k_1,k_2,\dots,k_n$$
+
+比较。
+
+得到权重后：
+
+$$z_i = \alpha_{i1}v_1 +\alpha_{i2}v_2 +\cdots +\alpha_{in}v_n$$
+
+所以：
+
+每个词都在向整个句子“检索”对自己有帮助的信息。
+### **一句话总结**
+
+可以把 Transformer 的 Attention 看成一个数据库查询系统：
+
+|**组件**|**含义**|**类比**|
+|---|---|---|
+|Query(Q)|我需要什么信息|搜索关键词|
+|Key(K)|我能提供什么信息|数据库索引|
+|Value(V)|真正的信息内容|数据库记录|
+|Q·K|匹配程度|搜索相关度|
+|Softmax(QK)|注意力权重|搜索结果排序|
+|权重×V|提取信息|返回结果|
+
+因此 Transformer 本质上是在做：
+
+**“每个词根据自己的需求（Q），去整个序列中查找最相关的信息（K），然后把这些信息（V）加权汇总回来。”**
+
+## 自注意力
+
+“自注意力”的“自”指的是：
+
+**自己和自己所在的同一个序列内部进行注意力计算。**
+
+不是自己只关注自己，而是：
+
+**序列内部的词彼此之间互相关注。**
+
+|**类型**|**Q来自哪里**|**K、V来自哪里**|**含义**|
+|---|---|---|---|
+|自注意力 Self-Attention|当前序列|当前序列|序列内部互相看|
+|交叉注意力 Cross-Attention|一个序列|另一个序列|一个序列去看另一个序列|
 
