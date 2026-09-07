@@ -9,12 +9,16 @@ tsconfig.tsbuildinfo
 private/
 .replit
 replit.nix
-content/电路理论基础/materials/pdfs/电路基础.pdf
-
-/content/数字电路与逻辑设计/materials/《数字基础-第十版-英文影印》.pdf
-/content/电路理论基础/materials/pdfs/电路基础.pdf
-/content/数字电路与逻辑设计/materials/数电10中文 (1).pdf
-/content/数字电路与逻辑设计/materials/数电10中文.pdf
 
 /content/copilot
-/content/操作系统/materials/26王道操作系统.pdf
+
+# 大文件（课程 PDF，按文件名匹配，目录移动后依然生效）
+电路基础.pdf
+《数字基础-第十版-英文影印》.pdf
+数电10中文 (1).pdf
+数电10中文.pdf
+26王道操作系统.pdf
+计算机网络.pdf
+2026-OS-CH-1-计算机系统概述 1.pdf
+2026-OS-CH-2-操作系统结构.pdf
+毛泽东思想和中国特色社会主义理论体系概论(2023年版).pdf
